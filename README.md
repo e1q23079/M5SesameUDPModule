@@ -60,3 +60,14 @@ pio run --target upload
 - `SesameController` は `lib/SesameController/` にあります
 - Sesame への操作は `SesameController` がまとめて担当します
 - ロック / アンロック前にセッションが有効かどうかを確認します
+
+## 表示フィードバック
+
+本プロジェクトは M5 の画面を使って状態を色で表示します。色の意味は以下の通りです。
+
+- 白 (`WHITE`): 初期状態
+- 青 (`BLUE`): 初期化完了または接続待ち
+- シアン (`CYAN`): Sesame に接続済み
+- 黄 (`YELLOW`): 接続失敗（再試行中）
+- 赤 (`RED`): ロック操作中（`BtnA` 押下）
+- 緑 (`GREEN`): アンロック操作中（`BtnB` 押下）
