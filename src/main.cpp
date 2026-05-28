@@ -2,13 +2,41 @@
 #include <M5Unified.h>
 
 #include "../lib/SesameController/SesameController.h"
+#include "../lib/UdpManager/UdpManager.h"
 #include "secrets.h"
+#include "setting.h"
+
+UdpManager udpManager(SSID, PASSWORD, IP_ADDRESS, PORT, GATEWAY_IP,
+                      SUBNET_MASK);
 
 SesameController sesameController(SESAME_MAC_ADDRESS, SESAME_PUBLIC_KEY,
                                   SESAME_SECRET_KEY, models::sesame_5);
 
 int colorStatus = WHITE;
 
+/*
+ * セサミをロックする
+ */
+void sesameLock() {
+    Serial.println("Locking...");
+    M5.Display.fillScreen(RED);
+    sesameController.lock();
+    delay(1000);
+}
+
+/**
+ * セサミをアンロックする
+ */
+void sesameUnlock() {
+    Serial.println("Unlocking...");
+    M5.Display.fillScreen(GREEN);
+    sesameController.unlock();
+    delay(1000);
+}
+
+/*
+ * 初期化処理
+ */
 void setup() {
     // M5Unifiedの初期化
     M5.begin();
@@ -20,6 +48,20 @@ void setup() {
     colorStatus = WHITE;
     M5.Display.fillScreen(colorStatus);
 
+    // Wi-Fi接続とUDPの開始（待機状態）
+    Serial.println("Wi-Fi connecting and starting UDP...");
+    if (!udpManager.begin()) {
+        colorStatus = ORANGE;
+        M5.Display.fillScreen(colorStatus);
+        Serial.println(
+            "Failed to connect to Wi-Fi. Check your credentials and network "
+            "settings.");
+        while (true) {
+            // 無限ループで停止
+        }
+    }
+    Serial.println("Wi-Fi connected and UDP started.");
+
     // BLEDeviceの初期化
     BLEDevice::init("M5SesameUDPModule");
 
@@ -29,12 +71,10 @@ void setup() {
     Serial.println("Setup complete.");
 }
 
+/*
+ * メインループ
+ */
 void loop() {
-    /*
-     * M5.BtnAが押されたら、セサミをアンロックします。
-     * M5.BtnBが押されたら、セサミをロックします。
-     */
-
     // M5Unifiedの状態を更新する
     M5.update();
 
@@ -59,15 +99,17 @@ void loop() {
 
     // ボタンの状態をチェックして、対応するアクションを実行する
     if (M5.BtnA.wasPressed()) {
-        Serial.println("Locking...");
-        M5.Display.fillScreen(RED);
-        sesameController.lock();
-        delay(1000);
+        sesameLock();
     } else if (M5.BtnB.wasPressed()) {
-        Serial.println("Unlocking...");
-        M5.Display.fillScreen(GREEN);
-        sesameController.unlock();
-        delay(1000);
+        sesameUnlock();
+    }
+
+    // UDPでコマンドを受信する
+    String command = udpManager.read();
+    if (command == "lock") {
+        sesameLock();
+    } else if (command == "unlock") {
+        sesameUnlock();
     }
 
     // 状態を表示

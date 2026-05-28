@@ -4,41 +4,47 @@ M5Unified を使った M5 系デバイスから、Sesame を BLE 経由でロッ
 
 ## 概要
 
-- `BtnA` でロック
-- `BtnB` でアンロック
-- 接続が切れている場合は、`loop()` 内で再接続を試みます
-- Sesame のモデルは現在 `sesame_5` を使っています
+- 物理ボタン `BtnA` でロック、 `BtnB` でアンロック
+- UDP コマンド（`lock` / `unlock`）で遠隔操作可能
+- Sesame の機種はサンプルで `models::sesame_5` を使用（必要に応じて変更してください）
+
+## 必要なもの
+
+- M5 系デバイス（M5Unified 対応ボード）
+- PlatformIO（ビルド・書き込み）
+- Sesame の公開鍵／秘密鍵と MAC アドレス
+- 同一ネットワーク上の PC（UDP 送信元）
 
 ## 接続準備
 
-Sesame の公開鍵・秘密鍵は、以下の QR リーダーで取得します。
+### Sesame の公開鍵・秘密鍵の取得
+
+Sesame の公開鍵・秘密鍵は以下の QR リーダーで取得します。
 
 <https://sesame-qr-reader.vercel.app/>
 
-MAC アドレスは、BLE スキャンアプリで Sesame を検索して取得します。次のアプリを使うと確認しやすいです。
+MAC アドレスは、BLE スキャンアプリ（nRF Connect）で Sesame を検索して取得します。
 
-- Android: <https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp&hl=ja>
-- iPhone: <https://apps.apple.com/jp/app/nrf-connect-for-mobile/id1054362403>
+- Android：<https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp&hl=ja>
+- iPhone：<https://apps.apple.com/jp/app/nrf-connect-for-mobile/id1054362403>
 
-取得手順は以下のとおりです。
+#### 取得手順
 
-1. Sesame をスマートフォンの近くに持ってきます。
-2. アプリで BLE スキャンを開始します。
-3. フィルターで RSSI を -67 dBm に設定します。
-4. Company が `CANDY HOUSE, Inc.` のデバイスを探します。
-5. 見つかった Sesame の詳細画面から MAC アドレスを確認します。
+1. Sesame をスマートフォンの近くに置く
+2. アプリで BLE スキャンを開始
+3. フィルターで RSSI を -67 dBm に設定（近接するデバイスを特定しやすくするため）
+4. Company が `CANDY HOUSE, Inc.` のデバイスを探す
+5. 見つかった Sesame の詳細画面から MAC アドレスを確認
 
-## 設定方法
+### ネットワーク情報の確認
 
-`src/secrets.h` に、次の定義を用意してください。
+デバイスや PC で使用する サブネット マスク、デフォルト ゲートウェイは、Windows では `ipconfig`、Linux では `ifconfig` / `ip addr` などで確認してください（`IPv4` 欄を参照）。
 
-```c++
-#define SESAME_MAC_ADDRESS "xx:xx:xx:xx:xx:xx"
-#define SESAME_PUBLIC_KEY "xxxxxxxxxxxxxxxx"
-#define SESAME_SECRET_KEY "xxxxxxxxxxxxxxxx"
-```
+## 設定
 
-`main.cpp` では、次のようにコントローラを初期化しています。
+`main.cpp` に Sesame の機種を設定してください。
+
+Sesame の機種は、`models::sesame_3` / `models::sesame_4` / `models::sesame_5` / `models::sesame_5_pro` / `models::sesame_6` / `models::sesame_6_pro` から適切なものに変更してください。
 
 ```c++
 SesameController sesameController(
@@ -48,16 +54,30 @@ SesameController sesameController(
     models::sesame_5);
 ```
 
-Sesame の機種が違う場合は、`models::sesame_3` / `models::sesame_4` / `models::sesame_5` / `models::sesame_5_pro` / `models::sesame_6` / `models::sesame_6_pro` から適切なものに変更してください。
+`src/secrets.h` に Sesame の MAC アドレス、公開鍵、シークレットキーを設定してください。
 
-## 動作
+```c++
+// src/secrets.h の例
+#define SESAME_MAC_ADDRESS "xx:xx:xx:xx:xx:xx"
+#define SESAME_PUBLIC_KEY "xxxxxxxxxxxxxxxx"
+#define SESAME_SECRET_KEY "xxxxxxxxxxxxxxxx"
+```
 
-起動時に M5Unified と BLE を初期化し、シリアルモニタに `Setup complete.` を出力します。`loop()` では Sesame のセッション状態を確認し、未接続なら接続を試みます。
+`src/setting.h` にネットワーク情報を設定してください。
 
-接続後は、以下の操作ができます。
+```c++
+// src/setting.h の例
+#define IP_ADDRESS "192.168.1.50"  // デバイスの固定IP（必要に応じて変更）
+#define PORT 12345
 
-- `BtnA` 押下: ロック
-- `BtnB` 押下: アンロック
+#define SSID "your-ssid"
+#define PASSWORD "your-password"
+
+#define GATEWAY_IP "192.168.1.1"
+#define SUBNET_MASK "255.255.255.0"
+```
+
+注: `IP_ADDRESS` を固定IPにする場合、ネットワークの IP 決定方法に注意してください（DHCP と競合しないように設定）。
 
 ## ビルドと書き込み
 
@@ -68,13 +88,41 @@ pio run
 pio run --target upload
 ```
 
-## 表示フィードバック
+## 使い方
 
-本プロジェクトは M5 の画面を使って状態を色で表示します。色の意味は以下の通りです。
+### ボタン操作
 
-- 白 (`WHITE`): 初期状態
-- 青 (`BLUE`): 初期化完了または接続待ち
-- シアン (`CYAN`): Sesame に接続済み
-- 黄 (`YELLOW`): 接続失敗（再試行中）
-- 赤 (`RED`): ロック操作中（`BtnA` 押下）
-- 緑 (`GREEN`): アンロック操作中（`BtnB` 押下）
+ボタン操作はローカルでの手動操作用です。押下すると即座に対応する操作を行い、画面表示とシリアルに状態が出力されます。
+
+- `BtnA` 押下：ロック
+- `BtnB` 押下：アンロック
+
+### UDPコマンド操作
+
+ロック／アンロックコマンドは UDP で受信します。送信先 IP / ポートは `src/setting.h` の設定に合わせてください。
+
+#### Linux の例（`nc` を使用）
+
+```bash
+nc -u <IPアドレス> <ポート番号>
+```
+
+接続後に標準入力へ直接コマンドを入力して Enter で送信します。
+
+```bash
+lock
+# または
+unlock
+```
+
+### ディスプレイ表示
+
+M5 の画面を使って状態を色で表示します。
+
+- 白 ： 起動直後（Wi‑Fi 接続待ち）
+- 青 ： Wi-Fi接続完了・ Sesame 接続待ち
+- オレンジ ： Wi-Fi 接続失敗（ネットワーク接続エラー）
+- シアン ： Sesame に接続済み
+- 黄 ： 接続失敗（再試行中）
+- 赤 ： ロック操作中
+- 緑 ： アンロック操作中
