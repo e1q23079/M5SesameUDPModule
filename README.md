@@ -15,6 +15,19 @@ Sesame の公開鍵・秘密鍵は、以下の QR リーダーで取得します
 
 <https://sesame-qr-reader.vercel.app/>
 
+MAC アドレスは、BLE スキャンアプリで Sesame を検索して取得します。次のアプリを使うと確認しやすいです。
+
+- Android: <https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp&hl=ja>
+- iPhone: <https://apps.apple.com/jp/app/nrf-connect-for-mobile/id1054362403>
+
+取得手順は以下のとおりです。
+
+1. Sesame をスマートフォンの近くに持ってきます。
+2. アプリで BLE スキャンを開始します。
+3. フィルターで RSSI を -67 dBm に設定します。
+4. Company が `CANDY HOUSE, Inc.` のデバイスを探します。
+5. 見つかった Sesame の詳細画面から MAC アドレスを確認します。
+
 ## 設定方法
 
 `src/secrets.h` に、次の定義を用意してください。
@@ -54,12 +67,6 @@ PlatformIO 環境でビルドし、ボードへ書き込みます。
 pio run
 pio run --target upload
 ```
-
-## 実装メモ
-
-- `SesameController` は `lib/SesameController/` にあります
-- Sesame への操作は `SesameController` がまとめて担当します
-- ロック / アンロック前にセッションが有効かどうかを確認します
 
 ## 表示フィードバック
 
