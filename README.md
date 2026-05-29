@@ -19,7 +19,7 @@ M5Unified を使った M5 系デバイスから、Sesame を BLE 経由でロッ
 
 ### Sesame の公開鍵・秘密鍵の取得
 
-Sesame の公開鍵・秘密鍵は以下の QR リーダーで取得します。
+Sesame の公開鍵・秘密鍵は以下の QR リーダーで取得します。使用する QR はマネージャー権限以上が必要です。
 
 <https://sesame-qr-reader.vercel.app/>
 
