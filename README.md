@@ -99,7 +99,7 @@ pio run --target upload
 
 ### UDPコマンド操作
 
-ロック／アンロックコマンドは UDP で受信します。送信先 IP / ポートは `src/setting.h` の設定に合わせてください。
+ロック／アンロックコマンドは UDP で受信します。送信先 IP / ポートは `src\setting\setting.h` の設定に合わせてください。
 
 #### Linux の例（`nc` を使用）
 
