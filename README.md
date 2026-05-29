@@ -54,19 +54,19 @@ SesameController sesameController(
     models::sesame_5);
 ```
 
-`src/secrets.h` に Sesame の MAC アドレス、公開鍵、シークレットキーを設定してください。
+`src\secret\secrets.h` に Sesame の MAC アドレス、公開鍵、シークレットキーを設定してください。
 
 ```c++
-// src/secrets.h の例
+// src\secret\secrets.h の例
 #define SESAME_MAC_ADDRESS "xx:xx:xx:xx:xx:xx"
 #define SESAME_PUBLIC_KEY "xxxxxxxxxxxxxxxx"
 #define SESAME_SECRET_KEY "xxxxxxxxxxxxxxxx"
 ```
 
-`src/setting.h` にネットワーク情報を設定してください。
+`src\setting\setting.h` にネットワーク情報を設定してください。
 
 ```c++
-// src/setting.h の例
+// src\setting\setting.h の例
 #define IP_ADDRESS "192.168.1.50"  // デバイスの固定IP（必要に応じて変更）
 #define PORT 12345
 
@@ -119,10 +119,35 @@ unlock
 
 M5 の画面を使って状態を色で表示します。
 
-- 白 ： 起動直後（Wi‑Fi 接続待ち）
+- 白 ： 起動直後
+- 紫 ： Wi‑Fi 接続待ち
 - 青 ： Wi-Fi接続完了・ Sesame 接続待ち
 - オレンジ ： Wi-Fi 接続失敗（ネットワーク接続エラー）
 - シアン ： Sesame に接続済み
 - 黄 ： 接続失敗（再試行中）
 - 赤 ： ロック操作中
 - 緑 ： アンロック操作中
+
+### シリアルモニター表示
+
+シリアルモニターでデバイスの起動ログや状態確認ができます。
+
+- **ボーレート**: `115200` に設定してください
+- **PlatformIO (VS Code)**: コマンドパレットで `PlatformIO: Monitor` を実行するか、ターミナルで次を使います
+
+    ```bash
+    pio device monitor -b 115200
+    ```
+
+- **Arduino IDE**: ツール > シリアルモニター を開き、右下のボーレートを `115200` に設定します。
+
+#### ログの例
+
+```bash
+Initializing...
+Wi-Fi connecting and starting UDP...
+Wi-Fi connected and UDP started.
+Setup complete.
+Connecting to Sesame...
+Connected to Sesame.
+```
