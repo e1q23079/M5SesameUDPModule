@@ -26,7 +26,6 @@ Sesame の公開鍵・秘密鍵は以下の QR リーダーで取得します。
 MAC アドレスは、BLE スキャンアプリ（nRF Connect）で Sesame を検索して取得します。
 
 - Android：<https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp&hl=ja>
-- iPhone：<https://apps.apple.com/jp/app/nrf-connect-for-mobile/id1054362403>
 
 #### 取得手順
 
